@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { AppBar, Typography, Toolbar, Avatar, Button, Stack } from "@mui/material";
+import {
+  AppBar,
+  Typography,
+  Toolbar,
+  Avatar,
+  Button,
+  Stack,
+} from "@mui/material";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { jwtDecode } from "jwt-decode";
@@ -9,15 +16,20 @@ import { useUser } from "../../context/UserContext";
 
 const Navbar = () => {
   const [user, setUser] = useState(null);
+  const [tokens, setTokens] = useState(() => {
+    const storedTokens = localStorage.getItem("userTokens");
+    return storedTokens ? parseInt(storedTokens, 10) : 100;
+  });
   const dispatch = useDispatch();
   let location = useLocation();
   const history = useNavigate();
-  const { tokens } = useUser();
 
   const logout = () => {
     dispatch({ type: actionType.LOGOUT });
     history("/auth");
     setUser("null");
+    localStorage.removeItem("userTokens");
+    window.dispatchEvent(new Event("localStorageTokenUpdated"));
   };
 
   useEffect(() => {
@@ -28,8 +40,27 @@ const Navbar = () => {
         logout();
       } else {
         setUser(decodedToken);
+        const storedTokens = localStorage.getItem('userTokens');
+        if (storedTokens) {
+          setTokens(parseInt(storedTokens, 10));
+        }
       }
     }
+
+    const tokenUpdateListener = () => {
+      const updatedTokens =
+        parseInt(localStorage.getItem("userTokens"), 10) || 100;
+      setTokens(updatedTokens);
+    };
+
+    window.addEventListener("localStorageTokenUpdated", tokenUpdateListener);
+
+    return () => {
+      window.removeEventListener(
+        "localStorageTokenUpdated",
+        tokenUpdateListener
+      );
+    };
   }, [location]);
 
   return (
@@ -48,17 +79,15 @@ const Navbar = () => {
       <Toolbar sx={styles.toolbar}>
         {user !== "null" && user !== null ? (
           <div sx={styles.profile}>
-            <Stack direction={'row'} spacing={1}>
-            <Avatar sx={styles.purple} alt={user.name} src={user.picture}>
-              {user.name.charAt(0)}
-            </Avatar>
-            <Typography sx={styles.userName} variant="h6">
-              {user.name}
-            </Typography>
+            <Stack direction={"row"} spacing={1}>
+              <Avatar sx={styles.purple} alt={user.name} src={user.picture}>
+                {user.name.charAt(0)}
+              </Avatar>
+              <Typography sx={styles.userName} variant="h6">
+                {user.name}
+              </Typography>
             </Stack>
-            <Typography variant="h6">
-              Tokens: {tokens}
-            </Typography>
+            <Typography variant="h6">Tokens: {tokens}</Typography>
             <Button
               variant="contained"
               sx={styles.logout}

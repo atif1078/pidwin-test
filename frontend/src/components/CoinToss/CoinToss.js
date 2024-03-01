@@ -44,11 +44,16 @@ const CoinToss = ({ onResult }) => {
 
       const data = await dispatch(tossCoin({ userId, wager, choice }));
       onResult(data);
-      setTokens(data.userTokens);
+      localStorage.setItem("userTokens", data.userTokens.toString());
+      window.dispatchEvent(new Event("localStorageTokenUpdated"));
       console.log("Coin toss response:", data);
       console.log("Coin toss:", data.userTokens);
       if (data.winStreak === 3 || data.winStreak === 5) {
-        alert(`Bonus payout! You won ${data.winStreak === 3 ? '3x' : '10x'} your wager!`);
+        alert(
+          `Bonus payout! You won ${
+            data.winStreak === 3 ? "3x" : "10x"
+          } your wager!`
+        );
       }
       dispatch({ type: UPDATE_TOKENS, tokens: data.userTokens });
     } catch (error) {

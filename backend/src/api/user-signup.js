@@ -28,13 +28,12 @@ const signup = async (req, res) => {
         email: result.email,
         password: result.hashedPassword,
         tokens: result.tokens,
-        winStreak: result.winStreak,
       },
       "test",
       { expiresIn: "1h" }
     );
 
-    res.status(200).json({ token });
+    res.status(200).json({ token, tokens: result.tokens });
   } catch (error) {
     res.status(500).json({ message: "Something went wrong" });
     console.log(error);

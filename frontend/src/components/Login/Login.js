@@ -36,11 +36,18 @@ const Login = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    let response;
     if (isLoggedIn) {
       dispatch(login(formData, history));
     } else {
       dispatch(signup(formData, history));
     }
+
+    if (response) {
+      localStorage.setItem('userTokens', response.tokens.toString());
+      window.dispatchEvent(new Event('localStorageTokenUpdated'));
+    }
+
   };
 
   const handleChange = (e) => {

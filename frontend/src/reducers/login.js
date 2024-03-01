@@ -4,6 +4,8 @@ const loginReducer = (state = { authData: null }, action) => {
   switch (action.type) {
     case LOGIN:
       localStorage.setItem("profile", JSON.stringify({ ...action?.data }));
+      localStorage.setItem("userTokens", action?.data.tokens.toString());
+      window.dispatchEvent(new Event('localStorageTokenUpdated'));
       return { ...state, authData: action?.data };
 
     case LOGOUT:
@@ -14,6 +16,8 @@ const loginReducer = (state = { authData: null }, action) => {
       if (state.authData) {
         const updatedProfile = { ...state.authData, tokens: action?.tokens };
         localStorage.setItem("profile", JSON.stringify(updatedProfile));
+        localStorage.setItem("userTokens", action?.tokens.toString());
+        window.dispatchEvent(new Event('localStorageTokenUpdated'));
         return { ...state, authData: updatedProfile };
       }
 
